@@ -10,8 +10,29 @@ express()
   .set('views', path.join(__dirname, 'views'))
   .set('view engine', 'ejs')
   .get('/', (req, res) => res.render('pages/index'))
-  .post('/mailCost', calcMailCost)
+  .post('/mailCost', showMailCost)
+  .post('/showDetails', function (req, res) {
+    var type = req.body.type;
+    var weight = req.body.weight;
+    var answer = calcMailCost(weight, type);
+
+    res.render('pages/showDetails', {
+      weight: weight,
+      type: type,
+      answer: answer
+    })
+  })
   .listen(PORT, () => console.log(`Listening on ${PORT}`));
+
+  function showMailCost(requests, response) {
+    let weight = requests.body.weight;
+    let type   = requests.body.type;
+
+    let answer = calcMailCost(weight, type);
+    response.writeHead(200, {'Content-Type' : 'text/html'});
+    response.write('<a href="javascript:loadDetails();"><h1><i class="fas fa-envelope fa-md"></i> The total cost will be $' + Number(answer).toFixed(2) + '</h1></a>');
+    response.end();
+  }
 
   function calcStamp(weight) {
     let answer = 0;
@@ -113,10 +134,9 @@ express()
 
 
 
-  function calcMailCost(requests, response) {
-    console.log(requests.body);
-    let weight = requests.body.weight;
-    let type   = requests.body.type;
+  function calcMailCost(w, t) {
+    let weight = w;
+    let type   = t;
     let answer;
 
     switch(type) {
@@ -135,10 +155,7 @@ express()
       default:
         console.log("ERROR invalid type");
       break;
-
     }
 
-    response.writeHead(200, {'Content-Type' : 'text/html'});
-    response.write('<a href="/calculate"><h1><i class="fas fa-envelope fa-md"></i> The total cost will be $' + answer + '</h1></a>');
-    response.end();
+    return answer;
   }
