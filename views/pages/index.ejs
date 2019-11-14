@@ -12,22 +12,26 @@
   <div class="shadow p-3 mb-5 bg-white rounded">
     <div class="container">
 
-      <form>
-        <div class="form-group row">
-          <label for="weight" class="col-sm-2 col-form-label">Weight (oz)</label>
-            <input type="number" class="form-control" id="weight">
-        </div>
-
+      <form action="" id="mailForm" onsubmit="calculate();return false">
         <div class="form-group row">
           <label for="MailType" class="col-sm-2 col-form-label">Mail Type</label>
-          <select class="form-control" id="mailType">
+          <select class="form-control" id="mailType" onchange="validateForm()">
             <option name="stamped">Letters (Stamped)</option>
             <option name="metered">Letters (Metered)</option>
             <option name="flats">Large Envelopes (Flats)</option>
             <option name="firstClass">First-Class Package Service—Retail</option>
           </select>
         </div>
-        <button type="button" class="btn btn-primary" onclick="calculate()">Calculate</button>
+
+        <div class="form-group row">
+          <label for="weight" class="col-sm-2 col-form-label">Weight (oz)</label>
+          <input type="number" class="form-control" id="weight" step="any" oninput="validateForm()">
+          <small id="weightHelp" class="form-text text-muted">Weight must be greater than 0 oz and no more than 3
+            oz</small>
+        </div>
+
+
+        <button type="submit" class="btn btn-primary" onclick="calculate()">Calculate</button>
       </form>
 
 
@@ -38,22 +42,67 @@
   <% include ../partials/footer.ejs %>
 
   <script>
+
+
+    function validateForm() {
+      var weight = document.getElementById("weight").value;
+      var type = document.getElementById("mailType");
+      var min = 0;
+      var max = 0;
+
+      switch (type.value) {
+        case "Letters (Stamped)":
+          document.getElementById("weightHelp").innerText = "Weight must be greater than 0 oz and no more than 3 oz";
+          max = 3;
+          break;
+        case "Letters (Metered)":
+          document.getElementById("weightHelp").innerText = "Weight must be greater than 0 oz and no more than 3 oz";
+          max = 3;
+          break;
+        case "Large Envelopes (Flats)":
+          document.getElementById("weightHelp").innerText = "Weight must be greater than 0 oz and no more than 13 oz";
+          max = 13;
+          break;
+        case "First-Class Package Service—Retail":
+          document.getElementById("weightHelp").innerText = "Weight must be greater than 0 oz and no more than 13 oz";
+          max = 13;
+          break;
+        default:
+          console.log("ERROR invalid type");
+          break;
+      }
+
+      if (weight <= max && weight > 0) {
+        $('#weight').css("border-color", "green");
+
+
+        return true;
+      }
+
+      if (weight != "") {
+        $('#weight').css("border-color", "red");
+      }
+      return false;
+    }
+
     function calculate() {
 
       //DO FORM VALIDATION!
+      if (validateForm()) {
 
-      // make the ajax request using jquery's load method
-      $('#response').load('/mailCost', {
-          'weight' : document.getElementById('weight').value,
-          'type'   : document.getElementById('mailType').value
-      },
+        // make the ajax request using jquery's load method
+        $('#response').load('/mailCost', {
+          'weight': document.getElementById('weight').value,
+          'type': document.getElementById('mailType').value
+        },
 
-      //call back function
-      function (err, data) {
-          console.log("load completed");
-      });
+          //call back function
+          function (err, data) {
+            console.log("load completed");
+          });
+      }
     }
-    
+
   </script>
 </body>
 
